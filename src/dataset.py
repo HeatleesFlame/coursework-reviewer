@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
+
 class DocumentDataset(Dataset):
     def __init__(self, hf_dataset, tokenizer):
         self.dataset = hf_dataset
