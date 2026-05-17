@@ -7,7 +7,7 @@ from transformers import AutoModelForSequenceClassification
 from transformers import DataCollatorWithPadding
 from transformers import get_linear_schedule_with_warmup
 from sklearn.utils.class_weight import compute_class_weight
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, confusion_matrix
 from tqdm.auto import tqdm
 
 from dataset import DocumentDataset
@@ -22,12 +22,12 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     data_collator = DataCollatorWithPadding(tokenizer, max_length=510)
 
-    train_dataset = DocumentDataset(load_dataset("json", data_dir=DATA_DIR, split="train"), tokenizer)
-    val_dataset = DocumentDataset(load_dataset("json", data_dir=DATA_DIR, split="validation"), tokenizer)
-    test_dataset = DocumentDataset(load_dataset("json", data_dir=DATA_DIR, split="test"), tokenizer)
+    train_dataset = DocumentDataset(load_dataset("json", data_dir=DATA_DIR, split="train").filter(lambda x: not x["is_negative"]), tokenizer)
+    val_dataset = DocumentDataset(load_dataset("json", data_dir=DATA_DIR, split="validation").filter(lambda x: not x["is_negative"]), tokenizer)
+    test_dataset = DocumentDataset(load_dataset("json", data_dir=DATA_DIR, split="test").filter(lambda x: not x["is_negative"]), tokenizer)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=4, collate_fn=data_collator)
-    val_dataloader = DataLoader(val_dataset, batch_size=4, collate_fn=data_collator)
+    train_dataloader = DataLoader(train_dataset, batch_size=64, collate_fn=data_collator)
+    val_dataloader = DataLoader(val_dataset, batch_size=64, collate_fn=data_collator)
 
     train_labels = [i["label"].item() for i in train_dataset]
     classes = np.unique(train_labels)
@@ -117,3 +117,4 @@ if __name__ == "__main__":
         print(f"Epoch Validation F1 Macro: {val_f1_macro:.4f}")
         f1_per_class = f1_score(all_labels, all_preds, average=None)
         print(f"F1 по классам: paragraph={f1_per_class[0]:.4f}, heading={f1_per_class[1]:.4f}, caption={f1_per_class[2]:.4f}")
+        print(confusion_matrix(all_labels, all_preds))
