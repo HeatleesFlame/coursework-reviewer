@@ -1,0 +1,65 @@
+heading_1:
+  font:
+    name: Times New Roman
+    size: 16
+    bold: true
+    italic: false
+    # color: "1F3864"  # hex, optional
+  paragraph:
+    alignment: center       # left | center | right | justify
+    space_before: 18        # pt
+    space_after: 6          # pt
+    line_spacing: 1.5       # multiple (1.0, 1.5, 2.0)
+    first_line_indent: 0    # cm
+
+heading_2:
+  font:
+    name: Times New Roman
+    size: 14
+    bold: true
+    italic: false
+  paragraph:
+    alignment: left
+    space_before: 12
+    space_after: 4
+    line_spacing: 1.5
+    first_line_indent: 0
+
+heading_3:
+  font:
+    name: Times New Roman
+    size: 13
+    bold: true
+    italic: false
+  paragraph:
+    alignment: left
+    space_before: 10
+    space_after: 4
+    line_spacing: 1.5
+    first_line_indent: 0
+
+paragraph:
+  font:
+    name: Times New Roman
+    size: 12
+    bold: false
+    italic: false
+  paragraph:
+    alignment: justify
+    space_before: 0
+    space_after: 0
+    line_spacing: 1.5
+    first_line_indent: 1.25  # cm, красная строка
+
+caption:
+  font:
+    name: Times New Roman
+    size: 11
+    bold: false
+    italic: true
+  paragraph:
+    alignment: center
+    space_before: 4
+    space_after: 10
+    line_spacing: 1.0
+    first_line_indent: 0
