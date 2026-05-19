@@ -17,6 +17,7 @@ from pathlib import Path
 import yaml
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -25,6 +26,51 @@ from predictor import RuBertPredictor  # noqa: E402
 # ---------------------------------------------------------------------------
 # Formatting helpers
 # ---------------------------------------------------------------------------
+
+_BIBLIOGRAPHY_RE = re.compile(
+    r"^(список\s+(литературы|использованных\s+\S+|использованной\s+литературы)"
+    r"|литература|references?|библиография)$",
+    re.IGNORECASE,
+)
+
+
+def _has_page_break(para) -> bool:
+    for run in para.runs:
+        if "\f" in run.text:
+            return True
+    for br in para._element.iter(qn("w:br")):
+        if br.get(qn("w:type")) == "page":
+            return True
+    # Section break that forces a new page
+    pPr = para._element.find(qn("w:pPr"))
+    if pPr is not None:
+        sectPr = pPr.find(qn("w:sectPr"))
+        if sectPr is not None:
+            type_el = sectPr.find(qn("w:type"))
+            val = type_el.get(qn("w:val"), "nextPage") if type_el is not None else "nextPage"
+            if val in ("nextPage", "evenPage", "oddPage"):
+                return True
+    return False
+
+
+def _filter_paragraphs(all_paragraphs: list) -> list:
+    """Skip the title page (before the first page break) and the bibliography section."""
+    # Locate where the title page ends
+    title_end = 0
+    for i, para in enumerate(all_paragraphs):
+        if _has_page_break(para):
+            title_end = i + 1
+            break
+
+    result = []
+    for para in all_paragraphs[title_end:]:
+        text = para.text.strip()
+        if text and _BIBLIOGRAPHY_RE.match(text):
+            break
+        if text:
+            result.append(para)
+    return result
+
 
 _ALIGNMENT = {
     "left": WD_ALIGN_PARAGRAPH.LEFT,
@@ -115,7 +161,7 @@ def format_document(
     predictor = RuBertPredictor()
 
     doc = Document(input_path)
-    paragraphs = [p for p in doc.paragraphs if p.text.strip()]
+    paragraphs = _filter_paragraphs(list(doc.paragraphs))
     print(f"Classifying {len(paragraphs)} paragraphs (batch_size={batch_size})…")
 
     texts = [p.text for p in paragraphs]
