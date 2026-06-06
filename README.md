@@ -106,7 +106,7 @@ coursework-reviewer/
 
 ```bash
 # 1. Клонировать репозиторий
-git clone <repo-url>
+git clone https://github.com/HeatleesFlame/coursework-reviewer.git
 cd coursework-reviewer
 
 # 2. Создать виртуальное окружение
